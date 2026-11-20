@@ -14,16 +14,16 @@ Prices are approximate (USD, late 2026) and change often — use them for budget
 
 | Option | ~Price | Notes |
 |---|---|---|
-| **A.** 10–11″ Android tablet (e.g. Lenovo Tab M11, Samsung Galaxy Tab A9+) | $150–230 | Easiest. Add Fully Kiosk Browser Plus (~$9) and a wall mount or stand. |
-| **B.** Raspberry Pi 5 (4 GB) + Raspberry Pi Touch Display 2 (7″ or larger) + stand/case + 27 W PSU + 32 GB SD | $160–200 | Most "homegrown". Runs Chromium kiosk. Add a small USB/3.5 mm speaker if it should play music. |
+| **B. (recommended)** Raspberry Pi 5 (4 GB) + Raspberry Pi Touch Display 2 (7″ or larger) + stand/case + 27 W PSU + 32 GB SD | $160–200 | Most "homegrown". Runs Chromium kiosk, and its built-in Bluetooth connects to the kitchen speaker as a Music Assistant player. |
+| **A.** 10–11″ Android tablet (e.g. Lenovo Tab M11, Samsung Galaxy Tab A9+) | $150–230 | Easiest screen. Add Fully Kiosk Browser Plus (~$9) and a mount. Music only from apps on the tablet; HA can't easily announce through it. |
 | Used 10″ touchscreen monitor + any mini PC/Pi | varies | Good for a bigger wall-mounted screen. |
 
 ## 3. Voice
 
 | Item | ~Price | Notes |
 |---|---|---|
-| Home Assistant Voice Preview Edition | $59 | Wake word, far-field mics, hardware mute, 3.5 mm out. One per room you want voice in. |
-| Powered speaker with 3.5 mm or Bluetooth input | $30–100 | Voice PE's built-in speaker is fine for voice; use an external one for music. |
+| Home Assistant Voice Preview Edition | $59 | Wake word, far-field mics, hardware mute. Its small speaker handles short spoken replies. One per room you want voice in. |
+| Kitchen speaker | $0 | Use your existing **Bluetooth speaker**, connected through the Pi display. Keep it on its charger and turn off auto-power-off if you can. |
 
 ## 4. Optional
 
@@ -37,5 +37,5 @@ Prices are approximate (USD, late 2026) and change often — use them for budget
 ## Typical builds
 
 - **Budget (~$300):** HA Green + Android tablet + Voice PE + HA Cloud.
-- **Recommended (~$420):** N100 mini PC + Pi 5 Touch Display 2 kit + Voice PE + powered speaker.
-- **Fully local (~$470):** Recommended build + ZBT-2, gradually swap cloud bulbs/plugs for Zigbee/Matter.
+- **Recommended (~$380):** N100 mini PC + Pi 5 Touch Display 2 kit + Voice PE + your Bluetooth speaker.
+- **Fully local (~$430):** Recommended build + ZBT-2, gradually swap cloud bulbs/plugs for Zigbee/Matter.

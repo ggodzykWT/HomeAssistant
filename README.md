@@ -49,12 +49,19 @@ Amazon Echo Show with a self-built, locally controlled smart display running
 │ display      │ │ PE (mic + │ │
 │ (touchscreen │ │ speaker)  │ │   Bulbs / plugs (Wi-Fi, Zigbee, Matter)
 │  kiosk)      │ └───────────┘ └──────────────────────────────────
+└──────┬───────┘
+       │ Bluetooth
+┌──────▼───────┐
+│ Kitchen BT   │  music, announcements, doorbell chime
+│ speaker      │
 └──────────────┘
 ```
 
 Splitting the **server** from the **display** is the key design choice. The
 server runs 24/7 and does all the work; the display is a "dumb" touchscreen
-that shows a dashboard. You can later add more displays (bedroom, office)
+that shows a dashboard **and** is the Bluetooth bridge to your kitchen
+speaker. (The HA server is in another room and Home Assistant OS can't stream
+audio to Bluetooth speakers, which is why the display handles that.) You can later add more displays (bedroom, office)
 without duplicating anything.
 
 ---
@@ -86,16 +93,25 @@ Minimum recommended kit (≈ $300–450 total):
   Green. A Raspberry Pi 5 (8 GB) with an NVMe SSD also works but has less
   headroom for local voice.
 - **Display:** one of
-  - **Option A (easiest):** a 10″ Android tablet + wall/stand mount, running
-    *Fully Kiosk Browser*.
-  - **Option B (most "homegrown"):** Raspberry Pi 5 (4 GB) + Raspberry Pi
-    Touch Display 2 + case/stand, running Chromium in kiosk mode
-    (script in [`kiosk/setup-pi-kiosk.sh`](kiosk/setup-pi-kiosk.sh)).
-- **Voice:** Home Assistant Voice Preview Edition (≈ $59) — far-field mics,
-  hardware mute switch, on-device wake word, and a 3.5 mm line-out you can
-  connect to a better speaker.
-- **Speaker:** any powered speaker with 3.5 mm input, or an existing Sonos /
-  Chromecast / AirPlay speaker.
+  - **Option B (recommended with a Bluetooth speaker):** Raspberry Pi 5 (4 GB)
+    + Raspberry Pi Touch Display 2 + case/stand, running Chromium in kiosk mode
+    (script in [`kiosk/setup-pi-kiosk.sh`](kiosk/setup-pi-kiosk.sh)). The Pi's
+    built-in Bluetooth connects to the kitchen speaker and shows up in Music
+    Assistant as a speaker called "Kitchen", so music, announcements and the
+    doorbell all play through it
+    ([`kiosk/setup-bt-speaker.sh`](kiosk/setup-bt-speaker.sh)).
+  - **Option A (simpler screen, weaker audio):** a 10″ Android tablet +
+    wall/stand mount, running *Fully Kiosk Browser*. Pair the speaker to the
+    tablet and play music from the Spotify / Pandora / Amazon Music apps on
+    the tablet. HA can't easily send music or announcements to it, though.
+- **Voice:** Home Assistant Voice Preview Edition (≈ $59): far-field mics,
+  hardware mute switch, on-device wake word. Its own small speaker gives
+  short replies ("OK, lights off"). Music and announcements go to the
+  Bluetooth speaker.
+- **Speaker:** your existing kitchen **Bluetooth speaker**, so nothing to buy.
+  Ideally keep it on its charger and turn off its auto-power-off if it has
+  that setting, because a speaker that sleeps drops the connection (the setup
+  script reconnects automatically when it wakes).
 - **Optional:** Zigbee/Thread USB radio (Home Assistant Connect ZBT-2 or
   similar) for future local-only bulbs and sensors.
 
@@ -196,20 +212,25 @@ all we need to show the calendar.
      expose each speaker as a **Spotify Connect** target, so the Spotify app on
      any phone can play to the kitchen.
    - **Pandora** — check Music Assistant's current provider list; if it isn't
-     listed for your version, play Pandora from the tablet's app (Option A) or
-     cast to a Chromecast/AirPlay speaker from your phone.
+     listed for your version, pair your phone straight to the Bluetooth speaker
+     for Pandora.
    - **Amazon Music** — ⚠️ *not supported*: Amazon offers no public API for
      third-party players. Options: (a) keep one Echo Dot around purely as a
      speaker and control it with the *Alexa Media Player* HACS integration,
-     (b) play Amazon Music from your phone via AirPlay/Bluetooth/Cast to the
-     kitchen speaker, or (c) consolidate onto Spotify. This is the one
+     (b) pair your phone straight to the kitchen Bluetooth speaker (most
+     speakers remember several devices; the Pi reconnects once your phone
+     lets go), or (c) consolidate onto Spotify. This is the one
      feature that truly doesn't come along cleanly.
    - Also available: local files/NAS, internet radio (TuneIn / Radio Browser),
      YouTube Music, Tidal, Apple Music, Plex, Jellyfin and more.
-3. Add **player providers** for your speakers: the Voice PE's line-out,
-   Sonos, Chromecast/Google Cast, AirPlay, DLNA, or *Squeezelite/Sendspin* on
-   the Raspberry Pi display (Option B) so the display itself is a speaker.
-4. Group speakers for whole-house audio if you have more than one.
+3. Add the **Squeezelite (Slimproto)** player provider in Music Assistant
+   (Settings → Providers → Add → *Squeezelite*). Once the Pi display is set up
+   in Phase 9, a player called **Kitchen** appears. That's your Bluetooth
+   speaker, and it shows up in HA as `media_player.kitchen`.
+4. Enable **Spotify Connect** for the Kitchen player in Music Assistant, so
+   anyone can pick "Kitchen" in the Spotify app on their phone.
+5. Later you can add other speakers (Sonos, Chromecast, AirPlay) and group
+   them for whole-house audio.
 
 ### Phase 7 — Arlo cameras (1 hour)
 
@@ -253,6 +274,28 @@ There is no official Arlo integration. Use the well-maintained community one:
 
 ### Phase 9 — Build the display (2–3 hours)
 
+**Option B — Raspberry Pi + Touch Display 2 (recommended)**
+
+1. Flash **Raspberry Pi OS (64-bit, with desktop)** with Raspberry Pi Imager.
+   In the imager's settings set hostname `familyhub`, your Wi-Fi, a user, and
+   enable SSH.
+2. Attach the Touch Display 2 per its instructions and boot.
+3. Copy [`kiosk/setup-pi-kiosk.sh`](kiosk/setup-pi-kiosk.sh) to the Pi and run:
+   `bash setup-pi-kiosk.sh http://<server-ip>:8123/family-hub/home`
+4. **Bluetooth speaker:** put the speaker in pairing mode, then copy
+   [`kiosk/setup-bt-speaker.sh`](kiosk/setup-bt-speaker.sh) to the Pi and run
+   `bash setup-bt-speaker.sh`. It scans for the speaker, lets you pick it,
+   pairs it, makes it the default audio output, installs a background service
+   that reconnects it whenever it wakes up, and installs **Squeezelite** so
+   Music Assistant sees a player called "Kitchen".
+5. Reboot. Chromium starts full-screen on the dashboard and the speaker
+   reconnects.
+6. Test: in Music Assistant, play something on **Kitchen**. Then in HA go to
+   **Developer tools → Actions** and run `tts.speak` with
+   `media_player_entity_id: media_player.kitchen`.
+7. Optional: install **LNXlink** (a Linux companion agent that talks to HA
+   over MQTT) so HA automations can blank/wake the Pi screen.
+
 **Option A — Android tablet**
 
 1. Factory reset the tablet, remove unneeded apps, disable auto-updates of
@@ -263,18 +306,7 @@ There is no official Arlo integration. Use the well-maintained community one:
    up), *Keep screen on while plugged in*, and *Remote administration*.
 4. In HA add the **Fully Kiosk Browser** integration — you can now turn the
    screen on/off and change brightness from automations.
-
-**Option B — Raspberry Pi + Touch Display 2**
-
-1. Flash **Raspberry Pi OS (64-bit, with desktop)** with Raspberry Pi Imager.
-   In the imager's settings set hostname `familyhub`, your Wi-Fi, a user, and
-   enable SSH.
-2. Attach the Touch Display 2 per its instructions and boot.
-3. Copy [`kiosk/setup-pi-kiosk.sh`](kiosk/setup-pi-kiosk.sh) to the Pi and run:
-   `bash setup-pi-kiosk.sh http://<server-ip>:8123/family-hub/home`
-4. Reboot. Chromium starts full-screen on the dashboard.
-5. Optional: install **LNXlink** (a Linux companion agent that talks to HA
-   over MQTT) so HA automations can blank/wake the Pi screen.
+5. Pair the Bluetooth speaker in Android Settings → Connected devices.
 
 **Both options**
 
@@ -308,10 +340,11 @@ Use your Phase 0 routine list. Examples are in
 [`config/packages/family_hub.yaml`](config/packages/family_hub.yaml):
 
 - Morning: lights on at 6:30 on weekdays, thermostat to day temp, announce
-  today's calendar on the kitchen speaker.
+  today's calendar on the kitchen Bluetooth speaker.
 - Good night (voice: "good night"): all lights off, plugs off, thermostat
   setback.
-- Arlo doorbell/motion: pop the camera on the display and announce it.
+- Arlo doorbell: announce it on the Bluetooth speaker (pausing music) and
+  pop the camera up on the display.
 - Display: screen off at night, on when someone is home in the morning.
 
 To use the package file: in `configuration.yaml` add
@@ -355,4 +388,5 @@ docs/device-inventory.md           ← Phase 0 worksheet
 config/packages/family_hub.yaml    ← automations, scripts, helpers (edit IDs)
 config/dashboards/family-hub.yaml  ← kitchen display dashboard (edit IDs)
 kiosk/setup-pi-kiosk.sh            ← Raspberry Pi kiosk setup (Option B)
+kiosk/setup-bt-speaker.sh          ← pair Bluetooth speaker + Music Assistant player
 ```

@@ -10,7 +10,10 @@
 #      (Settings -> Entities). The ones to change are:
 #        calendar.cozi_family                          Cozi ICS feed (Remote Calendar)
 #        climate.hallway                               Nest thermostat
-#        assist_satellite.home_assistant_voice_kitchen Voice Preview Edition
+#        media_player.kitchen                          Bluetooth speaker (via the Pi
+#                                                      display + Music Assistant)
+#        tts.piper                                     your TTS engine (or
+#                                                      tts.home_assistant_cloud)
 #        light.kitchen, light.living_room              lights
 #        switch.living_room_lamp, switch.coffee_maker  plugs
 #        binary_sensor.aarlo_ding_front_door           Arlo doorbell press
@@ -74,6 +77,25 @@ script:
       - stop: "done"
         response_variable: summary
 
+  # Speaks a message on the kitchen Bluetooth speaker. Music Assistant pauses
+  # whatever is playing, speaks, then resumes the music.
+  hub_announce:
+    alias: "Hub: announce on kitchen speaker"
+    icon: mdi:bullhorn
+    fields:
+      message:
+        description: What to say
+        required: true
+        selector:
+          text:
+    sequence:
+      - action: tts.speak
+        target:
+          entity_id: tts.piper
+        data:
+          media_player_entity_id: media_player.kitchen
+          message: "{{ message }}"
+
   hub_good_night:
     alias: "Hub: good night"
     icon: mdi:weather-night
@@ -121,9 +143,7 @@ automation:
         state: "off"
       - action: script.hub_calendar_summary
         response_variable: cal
-      - action: assist_satellite.announce
-        target:
-          entity_id: assist_satellite.home_assistant_voice_kitchen
+      - action: script.hub_announce
         data:
           message: "Good morning! {{ cal.message }}"
 
@@ -164,9 +184,7 @@ automation:
         entity_id: binary_sensor.aarlo_ding_front_door
         to: "on"
     actions:
-      - action: assist_satellite.announce
-        target:
-          entity_id: assist_satellite.home_assistant_voice_kitchen
+      - action: script.hub_announce
         data:
           message: "Someone is at the front door."
       - action: fully_kiosk.load_url # Option A only; remove for the Pi display
