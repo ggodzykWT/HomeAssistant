@@ -1,0 +1,146 @@
+# Family Hub dashboard — paste into Settings -> Dashboards -> Family Hub ->
+# edit -> ⋮ -> Raw configuration editor.
+#
+# Requires these HACS frontend cards: Week Planner Card, Advanced Camera Card,
+# kiosk-mode, Wallpanel. Replace the example entity IDs with your own.
+
+# kiosk-mode: hide header and sidebar for non-admin users (the display account).
+kiosk_mode:
+  non_admin_settings:
+    kiosk: true
+
+# Wallpanel: photo-frame screensaver after 5 minutes idle.
+# Put photos in /media/photos on the HA server (Media -> My media -> upload).
+wallpanel:
+  enabled: true
+  hide_toolbar: true
+  hide_sidebar: true
+  fullscreen: true
+  idle_time: 300
+  image_url: media-source://media_source/local/photos
+  display_time: 30
+  cards:
+    - type: clock
+    - type: weather-forecast
+      entity: weather.forecast_home
+      show_forecast: false
+
+title: Family Hub
+views:
+  - title: Home
+    path: home
+    icon: mdi:home
+    type: sections
+    max_columns: 3
+    sections:
+      # Column 1: time, weather, thermostat
+      - type: grid
+        cards:
+          - type: clock
+            clock_size: large
+          - type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: daily
+          - type: thermostat
+            entity: climate.hallway
+            features:
+              - type: climate-hvac-modes
+
+      # Column 2: the Cozi calendar
+      - type: grid
+        column_span: 1
+        cards:
+          - type: custom:week-planner-card
+            days: 7
+            startingDay: today
+            compact: true
+            hideWeekend: false
+            calendars:
+              - entity: calendar.cozi_family
+                name: Family
+                color: "#3b82f6"
+              # One feed per family member gives each person a color:
+              # - entity: calendar.cozi_mom
+              #   color: "#ec4899"
+              # - entity: calendar.cozi_dad
+              #   color: "#22c55e"
+
+      # Column 3: music, quick controls, shopping list
+      - type: grid
+        cards:
+          - type: media-control
+            entity: media_player.kitchen # Music Assistant player
+          - type: tile
+            entity: light.kitchen
+            features:
+              - type: light-brightness
+          - type: tile
+            entity: light.living_room
+          - type: tile
+            entity: switch.living_room_lamp
+          - type: tile
+            entity: switch.coffee_maker
+          - type: button
+            name: Good night
+            icon: mdi:weather-night
+            tap_action:
+              action: perform-action
+              perform_action: script.hub_good_night
+              confirmation:
+                text: Turn everything off for the night?
+          - type: todo-list
+            entity: todo.shopping_list
+
+  - title: Cameras
+    path: cameras
+    icon: mdi:cctv
+    type: panel
+    cards:
+      - type: custom:advanced-camera-card
+        cameras:
+          - camera_entity: camera.aarlo_front_door
+          - camera_entity: camera.aarlo_backyard
+          - camera_entity: camera.aarlo_driveway
+        live:
+          preload: false # don't keep Arlo streams open (saves battery)
+        view:
+          default: live
+
+  - title: Music
+    path: music
+    icon: mdi:music
+    type: sections
+    max_columns: 2
+    sections:
+      - type: grid
+        cards:
+          - type: media-control
+            entity: media_player.kitchen
+          - type: tile
+            entity: media_player.kitchen
+            features:
+              - type: media-player-volume-slider
+      # For browsing/search, use the Music Assistant panel in the HA sidebar
+      # (the display user can be given access to it).
+
+  - title: Rooms
+    path: rooms
+    icon: mdi:floor-plan
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: area
+            area: kitchen
+            display_type: compact
+      - type: grid
+        cards:
+          - type: area
+            area: living_room
+            display_type: compact
+      - type: grid
+        cards:
+          - type: area
+            area: bedroom
+            display_type: compact

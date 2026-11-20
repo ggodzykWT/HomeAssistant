@@ -1,0 +1,226 @@
+# Family Hub package — automations, scripts and helpers that replace
+# Echo Show routines.
+#
+# Install:
+#   1. In configuration.yaml add:
+#        homeassistant:
+#          packages: !include_dir_named packages
+#   2. Copy this file to /config/packages/family_hub.yaml
+#   3. Search-and-replace the example entity IDs below with your own
+#      (Settings -> Entities). The ones to change are:
+#        calendar.cozi_family                          Cozi ICS feed (Remote Calendar)
+#        climate.hallway                               Nest thermostat
+#        assist_satellite.home_assistant_voice_kitchen Voice Preview Edition
+#        light.kitchen, light.living_room              lights
+#        switch.living_room_lamp, switch.coffee_maker  plugs
+#        binary_sensor.aarlo_ding_front_door           Arlo doorbell press
+#        binary_sensor.aarlo_motion_front_door         Arlo motion
+#        light.kitchen_tablet_screen                   Fully Kiosk screen (Option A)
+#        notify.mobile_app_parent_phone                Companion app on a phone
+#   4. Developer tools -> YAML -> Check configuration -> Restart.
+
+input_number:
+  hub_day_temperature:
+    name: Day temperature
+    min: 60
+    max: 78
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer
+    initial: 68
+  hub_night_temperature:
+    name: Night temperature
+    min: 55
+    max: 75
+    step: 1
+    unit_of_measurement: "°F"
+    icon: mdi:thermometer-low
+    initial: 64
+
+input_boolean:
+  hub_guest_mode:
+    name: Guest mode (skip morning announcements)
+    icon: mdi:account-multiple
+
+script:
+  # Reads today's Cozi events and returns a spoken summary.
+  # Used by the morning announcement and by the "what's on the calendar" voice command.
+  hub_calendar_summary:
+    alias: "Hub: today's calendar summary"
+    icon: mdi:calendar-today
+    sequence:
+      - action: calendar.get_events
+        target:
+          entity_id: calendar.cozi_family
+        data:
+          start_date_time: "{{ today_at('00:00') }}"
+          end_date_time: "{{ today_at('23:59') }}"
+        response_variable: agenda
+      - variables:
+          summary:
+            message: >-
+              {% set events = agenda['calendar.cozi_family'].events %}
+              {% if events | count == 0 %}
+                There's nothing on the family calendar today.
+              {% else %}
+                Today there {{ 'is' if events | count == 1 else 'are' }}
+                {{ events | count }} thing{{ '' if events | count == 1 else 's' }}
+                on the family calendar.
+                {% for e in events %}
+                  {% if 'T' in e.start %}At {{ as_datetime(e.start).strftime('%-I:%M %p') }},{% endif %}
+                  {{ e.summary }}.
+                {% endfor %}
+              {% endif %}
+      - stop: "done"
+        response_variable: summary
+
+  hub_good_night:
+    alias: "Hub: good night"
+    icon: mdi:weather-night
+    sequence:
+      - action: light.turn_off
+        target:
+          entity_id: all
+      - action: switch.turn_off
+        target:
+          entity_id:
+            - switch.living_room_lamp
+            - switch.coffee_maker
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.hallway
+        data:
+          temperature: "{{ states('input_number.hub_night_temperature') | float }}"
+
+automation:
+  - id: hub_morning_weekday
+    alias: "Hub: weekday morning"
+    triggers:
+      - trigger: time
+        at: "06:30:00"
+    conditions:
+      - condition: time
+        weekday: [mon, tue, wed, thu, fri]
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.kitchen
+        data:
+          brightness_pct: 80
+      - action: climate.set_temperature
+        target:
+          entity_id: climate.hallway
+        data:
+          temperature: "{{ states('input_number.hub_day_temperature') | float }}"
+      - action: light.turn_on # wake the kitchen display (Fully Kiosk, Option A)
+        target:
+          entity_id: light.kitchen_tablet_screen
+        continue_on_error: true
+      - condition: state
+        entity_id: input_boolean.hub_guest_mode
+        state: "off"
+      - action: script.hub_calendar_summary
+        response_variable: cal
+      - action: assist_satellite.announce
+        target:
+          entity_id: assist_satellite.home_assistant_voice_kitchen
+        data:
+          message: "Good morning! {{ cal.message }}"
+
+  # Voice: "good night" / "goodnight everyone"
+  - id: hub_voice_good_night
+    alias: "Hub: voice good night"
+    triggers:
+      - trigger: conversation
+        command:
+          - "good night"
+          - "goodnight"
+          - "good night everyone"
+    actions:
+      - action: script.hub_good_night
+      - set_conversation_response: "Good night. Lights are off and the heat is turned down."
+
+  # Voice: "what's on the calendar today?"
+  - id: hub_voice_calendar
+    alias: "Hub: voice calendar"
+    triggers:
+      - trigger: conversation
+        command:
+          - "what's on the calendar [today]"
+          - "what is on the calendar [today]"
+          - "what's [on] (the|our) schedule [today]"
+    actions:
+      - action: script.hub_calendar_summary
+        response_variable: cal
+      - set_conversation_response: "{{ cal.message }}"
+
+  # Arlo doorbell: jump the display to the cameras view and announce it.
+  - id: hub_doorbell
+    alias: "Hub: doorbell pressed"
+    mode: single
+    max_exceeded: silent
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.aarlo_ding_front_door
+        to: "on"
+    actions:
+      - action: assist_satellite.announce
+        target:
+          entity_id: assist_satellite.home_assistant_voice_kitchen
+        data:
+          message: "Someone is at the front door."
+      - action: fully_kiosk.load_url # Option A only; remove for the Pi display
+        target:
+          entity_id: light.kitchen_tablet_screen
+        data:
+          url: "http://homeassistant.local:8123/family-hub/cameras"
+        continue_on_error: true
+      - action: notify.mobile_app_parent_phone
+        data:
+          title: "Doorbell"
+          message: "Someone is at the front door."
+      - delay: "00:00:30" # ignore repeat presses for 30 seconds
+
+  # Motion at the front door while nobody is home -> phone alert.
+  - id: hub_motion_away
+    alias: "Hub: front door motion while away"
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.aarlo_motion_front_door
+        to: "on"
+    conditions:
+      - condition: state
+        entity_id: zone.home
+        state: "0" # number of people home
+    actions:
+      - action: notify.mobile_app_parent_phone
+        data:
+          title: "Front door"
+          message: "Motion detected and nobody is home."
+
+  # Display: screen off at night, back on in the morning (Fully Kiosk, Option A).
+  - id: hub_display_night
+    alias: "Hub: display off at night"
+    triggers:
+      - trigger: time
+        at: "22:30:00"
+    actions:
+      - action: light.turn_off
+        target:
+          entity_id: light.kitchen_tablet_screen
+
+  - id: hub_display_morning
+    alias: "Hub: display on in the morning"
+    triggers:
+      - trigger: time
+        at: "06:00:00"
+    conditions:
+      - condition: numeric_state
+        entity_id: zone.home
+        above: 0
+    actions:
+      - action: light.turn_on
+        target:
+          entity_id: light.kitchen_tablet_screen
+        data:
+          brightness: 200
