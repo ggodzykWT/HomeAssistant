@@ -34,6 +34,17 @@ Prices are approximate (USD, late 2026) and change often — use them for budget
 | Motion sensor near the display | $15–25 | Wake the screen when someone walks up (tablet camera can also do this). |
 | UPS for server + router | $60–90 | Keeps the hub alive through brief outages. |
 
+## 5. Optional media server (Phase 13)
+
+See [`media-server.md`](media-server.md) for which option fits.
+
+| Option | ~Price | Notes |
+|---|---|---|
+| 2-bay NAS with Intel graphics (e.g. UGREEN DXP2800, Synology DS224+) + 2 × 4–8 TB drives | $350–650 | Easiest for big libraries, mirrored drives, and also stores HA backups. |
+| Stronger single mini PC instead of the basic server (N150/N305, 16–32 GB RAM, 1 TB SSD) running Proxmox | +$80–200 over the basic server | One box runs Home Assistant and the media server side by side. |
+| Second N100/N150 mini PC + 4–8 TB USB drive | $250–350 | Keeps the media server physically separate from Home Assistant. |
+| Plex Pass (only if you choose Plex) | ~$7/mo or lifetime | Needed for hardware transcoding; Jellyfin is free. |
+
 ## Typical builds
 
 - **Budget (~$300):** HA Green + Android tablet + Voice PE + HA Cloud.

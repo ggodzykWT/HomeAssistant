@@ -18,6 +18,7 @@ Amazon Echo Show with a self-built, locally controlled smart display running
 | Routines | Home Assistant automations and scripts |
 | Photo frame when idle | Wallpanel screensaver (photos from a local folder or Immich) |
 | Timers, weather, clock | Assist timers, weather integration, dashboard cards |
+| *(new)* Your own music, movies and photos | Optional media server: Jellyfin/Plex + Immich ([Phase 13](#phase-13--optional-add-a-media-server)) |
 
 **What does *not* carry over cleanly** (know this before you start)
 
@@ -50,6 +51,11 @@ Amazon Echo Show with a self-built, locally controlled smart display running
 │ (touchscreen │ │ speaker)  │ │   Bulbs / plugs (Wi-Fi, Zigbee, Matter)
 │  kiosk)      │ └───────────┘ └──────────────────────────────────
 └──────┬───────┘
+       │                 ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┐
+       │                   Optional media server (Phase 13)
+       │                 │ Jellyfin / Plex + Immich, on a  │
+       │                   NAS or a second mini PC
+       │                 └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─┘
        │ Bluetooth
 ┌──────▼───────┐
 │ Kitchen BT   │  music, announcements, doorbell chime
@@ -61,8 +67,18 @@ Splitting the **server** from the **display** is the key design choice. The
 server runs 24/7 and does all the work; the display is a "dumb" touchscreen
 that shows a dashboard **and** is the Bluetooth bridge to your kitchen
 speaker. (The HA server is in another room and Home Assistant OS can't stream
-audio to Bluetooth speakers, which is why the display handles that.) You can later add more displays (bedroom, office)
-without duplicating anything.
+audio to Bluetooth speakers, which is why the display handles that.) You can
+later add more displays (bedroom, office) without duplicating anything.
+
+Why not run everything on the one Raspberry Pi in the kitchen? Home Assistant
+OS has no screen output or Bluetooth audio. The workarounds lose the add-on
+store or rely on unofficial add-ons. And a kitchen server on Wi-Fi that
+anyone can unplug takes the whole house down with it. Two devices cost about
+$100–150 more and are much more reliable.
+
+A **media server** for your own music, movies and photos is an optional third
+piece on the server side (Phase 13). It plugs into Music Assistant and the
+display without changing anything else.
 
 ---
 
@@ -77,9 +93,9 @@ leave the Echo Show running in parallel until the end.
    thermostat, its **brand** and its **app** (Kasa, Smart Life, Hue, Wyze…).
    Use [`docs/device-inventory.md`](docs/device-inventory.md) as the worksheet.
 2. Open **More → Routines** and write down every routine (trigger + actions).
-   These become HA automations in Phase 8.
+   These become HA automations in Phase 11.
 3. Note what you actually use the screen for each day (calendar? cameras?
-   timers? music?). That drives the dashboard layout in Phase 7.
+   timers? music?). That drives the dashboard layout in Phase 10.
 
 > Why the brand matters: Home Assistant talks to each device through its own
 > integration. A "Kasa" plug uses the TP-Link integration, a "Smart Life" plug
@@ -114,6 +130,10 @@ Minimum recommended kit (≈ $300–450 total):
   script reconnects automatically when it wakes).
 - **Optional:** Zigbee/Thread USB radio (Home Assistant Connect ZBT-2 or
   similar) for future local-only bulbs and sensors.
+- **Planning a media server later?** Either keep this server as is and add a
+  NAS or a second mini PC later, or buy a stronger mini PC now (N150/N305,
+  16–32 GB RAM, 1 TB SSD) to run both. See
+  [`docs/media-server.md`](docs/media-server.md) before you buy.
 
 ### Phase 2 — Install Home Assistant on the server (1–2 hours)
 
@@ -221,8 +241,10 @@ all we need to show the calendar.
      speakers remember several devices; the Pi reconnects once your phone
      lets go), or (c) consolidate onto Spotify. This is the one
      feature that truly doesn't come along cleanly.
-   - Also available: local files/NAS, internet radio (TuneIn / Radio Browser),
-     YouTube Music, Tidal, Apple Music, Plex, Jellyfin and more.
+   - Also available: internet radio (TuneIn / Radio Browser), YouTube Music,
+     Tidal, Apple Music and more.
+   - **Your own library:** local files on a NAS, or a Jellyfin / Plex /
+     Navidrome media server. See Phase 13.
 3. Add the **Squeezelite (Slimproto)** player provider in Music Assistant
    (Settings → Providers → Add → *Squeezelite*). Once the Pi display is set up
    in Phase 9, a player called **Kitchen** appears. That's your Bluetooth
@@ -371,6 +393,29 @@ entity IDs, and **Developer tools → YAML → Check configuration → Restart**
 
 ---
 
+### Phase 13 — (Optional) Add a media server
+
+Do this any time after the main build. Full guide:
+[`docs/media-server.md`](docs/media-server.md).
+
+1. **Choose the software:** **Jellyfin** (free) or **Plex** for music, movies
+   and TV, and **Immich** for family photos.
+2. **Choose where it runs** (never on the kitchen display):
+   - a **NAS** (easiest if you have lots of files and want mirrored drives);
+   - **one stronger mini PC running Proxmox**, with Home Assistant OS and the
+     media server side by side; or
+   - a **second mini PC** with Docker.
+3. **Install the server**, organize your files, and create a
+   `homeassistant` user.
+4. **Connect it:**
+   - add it as a **Music Assistant provider**, so your library plays on the
+     kitchen Bluetooth speaker;
+   - add the **Jellyfin/Plex** integration in HA to control TV playback;
+   - add **Immich** so the display's screensaver shows a family photo album.
+5. **Back up the photos** to a second location.
+
+---
+
 ## Ongoing maintenance
 
 - Update HA monthly (first Wednesday-ish release cycle); read the release
@@ -385,6 +430,7 @@ entity IDs, and **Developer tools → YAML → Check configuration → Restart**
 README.md                          ← this guide
 docs/shopping-list.md              ← hardware options and approximate prices
 docs/device-inventory.md           ← Phase 0 worksheet
+docs/media-server.md               ← Phase 13: optional Jellyfin/Plex/Immich
 config/packages/family_hub.yaml    ← automations, scripts, helpers (edit IDs)
 config/dashboards/family-hub.yaml  ← kitchen display dashboard (edit IDs)
 kiosk/setup-pi-kiosk.sh            ← Raspberry Pi kiosk setup (Option B)
