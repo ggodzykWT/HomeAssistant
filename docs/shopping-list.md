@@ -56,6 +56,18 @@ See [`coax-moca.md`](coax-moca.md) to check your coax first.
 | 5–1675 MHz splitters, 75 Ω terminator caps | $5–15 each | Only if your existing splitters are older/lower rated. |
 | HDHomeRun network TV tuner (if you have an antenna) | $100–200 | Free live TV + DVR in Jellyfin/Plex. |
 
+## 7. Optional: wired network over old phone jacks
+
+See [`phone-jacks.md`](phone-jacks.md) to check the wire first.
+
+| Item | ~Price | Notes |
+|---|---|---|
+| RJ45 keystone jacks + wall plates | $2–4 each | One per room jack, plus one per run at the central spot (or a patch panel). |
+| Small patch panel (8–12 port) | $20–35 | Optional; tidier than loose keystones at the central spot. |
+| Punch-down tool + network cable tester | $25 total | Needed to convert jacks. |
+| 8-port gigabit switch | $25–40 | At the central spot where the phone wires meet. |
+| G.hn phone-line adapters (if wire is Cat3/quad or daisy-chained) | $60–120 per pair | ~100–500 Mbps over phone wire. |
+
 ## Typical builds
 
 - **Budget (~$300):** HA Green + Android tablet + Voice PE + HA Cloud.

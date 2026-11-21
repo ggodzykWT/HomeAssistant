@@ -130,9 +130,13 @@ Minimum recommended kit (≈ $300–450 total):
   script reconnects automatically when it wakes).
 - **Optional:** Zigbee/Thread USB radio (Home Assistant Connect ZBT-2 or
   similar) for future local-only bulbs and sensors.
-- **No Ethernet where the server will live?** If there's a coax (TV cable)
-  jack there, a pair of **MoCA adapters** (~$120–180) turns the coax into a
-  wired network connection. See [`docs/coax-moca.md`](docs/coax-moca.md).
+- **No Ethernet where the server will live?** Use the wiring already in
+  your walls:
+  - **Old phone (RJ11) jacks:** if the wire behind them is Cat5e, they can
+    be converted into real Ethernet jacks. Otherwise phone-line (G.hn)
+    adapters work. See [`docs/phone-jacks.md`](docs/phone-jacks.md).
+  - **Coax (TV cable) jacks:** a pair of **MoCA adapters** (~$120–180) turns
+    the coax into a wired connection. See [`docs/coax-moca.md`](docs/coax-moca.md).
 - **Planning a media server later?** Either keep this server as is and add a
   NAS or a second mini PC later, or buy a stronger mini PC now (N150/N305,
   16–32 GB RAM, 1 TB SSD) to run both. See
@@ -145,7 +149,9 @@ Minimum recommended kit (≈ $300–450 total):
    (mini PC: write the "generic x86-64" image to the SSD; Pi: use Raspberry Pi
    Imager → *Other specific-purpose OS → Home assistant*).
 2. Connect the server by **ethernet** (directly to the router, or through a
-   MoCA adapter on your coax; see [`docs/coax-moca.md`](docs/coax-moca.md)),
+   converted phone jack or MoCA adapter; see
+   [`docs/phone-jacks.md`](docs/phone-jacks.md) and
+   [`docs/coax-moca.md`](docs/coax-moca.md)),
    power it on, and browse to
    `http://homeassistant.local:8123`.
 3. Create the owner account, set home location, units, and time zone.
@@ -441,6 +447,7 @@ docs/shopping-list.md              ← hardware options and approximate prices
 docs/device-inventory.md           ← Phase 0 worksheet
 docs/media-server.md               ← Phase 13: optional Jellyfin/Plex/Immich
 docs/coax-moca.md                  ← wired networking over existing coax
+docs/phone-jacks.md                ← wired networking over old phone jacks
 config/packages/family_hub.yaml    ← automations, scripts, helpers (edit IDs)
 config/dashboards/family-hub.yaml  ← kitchen display dashboard (edit IDs)
 kiosk/setup-pi-kiosk.sh            ← Raspberry Pi kiosk setup (Option B)

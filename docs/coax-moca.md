@@ -135,6 +135,9 @@ If you have (or add) a TV antenna on the coax, an **HDHomeRun** network tuner
 
 ## Alternatives if coax isn't an option
 
+- **Old phone (RJ11) jacks**: if the wire behind them is Cat5e, convert them
+  to real Ethernet jacks, which beats MoCA. Otherwise use G.hn phone-line
+  adapters. See [`phone-jacks.md`](phone-jacks.md).
 - **Powerline adapters** use electrical wiring. Slower and less consistent
   than MoCA, but no coax needed.
 - **Ethernet cable** remains the best if you can run it. Flat cables tucked
