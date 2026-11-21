@@ -118,7 +118,15 @@ The steps assume Jellyfin. Plex is almost identical.
    Assistant once the provider is added (best with an LLM conversation
    agent; see Phase 8 of the main guide).
 
-## 5. Remote access and backups
+## 5. Use the coax in your walls
+
+Streaming video over Wi-Fi is the most common cause of buffering. If the
+media server and TVs are near coax jacks, **MoCA adapters** give them a wired
+connection over the existing cable. An antenna on the same coax plus an
+**HDHomeRun** tuner lets Jellyfin/Plex offer live TV and a DVR. See
+[`coax-moca.md`](coax-moca.md).
+
+## 6. Remote access and backups
 
 - To watch outside the house, use **Tailscale** on the media server (the
   same approach as Home Assistant). Avoid opening ports on your router.

@@ -130,6 +130,9 @@ Minimum recommended kit (≈ $300–450 total):
   script reconnects automatically when it wakes).
 - **Optional:** Zigbee/Thread USB radio (Home Assistant Connect ZBT-2 or
   similar) for future local-only bulbs and sensors.
+- **No Ethernet where the server will live?** If there's a coax (TV cable)
+  jack there, a pair of **MoCA adapters** (~$120–180) turns the coax into a
+  wired network connection. See [`docs/coax-moca.md`](docs/coax-moca.md).
 - **Planning a media server later?** Either keep this server as is and add a
   NAS or a second mini PC later, or buy a stronger mini PC now (N150/N305,
   16–32 GB RAM, 1 TB SSD) to run both. See
@@ -141,7 +144,9 @@ Minimum recommended kit (≈ $300–450 total):
    <https://www.home-assistant.io/installation/> and flash it
    (mini PC: write the "generic x86-64" image to the SSD; Pi: use Raspberry Pi
    Imager → *Other specific-purpose OS → Home assistant*).
-2. Connect the server by **ethernet**, power it on, and browse to
+2. Connect the server by **ethernet** (directly to the router, or through a
+   MoCA adapter on your coax; see [`docs/coax-moca.md`](docs/coax-moca.md)),
+   power it on, and browse to
    `http://homeassistant.local:8123`.
 3. Create the owner account, set home location, units, and time zone.
 4. In your router, give the server a **DHCP reservation** (fixed IP).
@@ -413,6 +418,10 @@ Do this any time after the main build. Full guide:
    - add the **Jellyfin/Plex** integration in HA to control TV playback;
    - add **Immich** so the display's screensaver shows a family photo album.
 5. **Back up the photos** to a second location.
+6. **Tip:** wire the media server and your TVs over **coax with MoCA
+   adapters** for smooth 4K streaming. An antenna on the same coax plus an
+   **HDHomeRun** tuner adds free live TV and DVR to Jellyfin/Plex. See
+   [`docs/coax-moca.md`](docs/coax-moca.md).
 
 ---
 
@@ -431,6 +440,7 @@ README.md                          ← this guide
 docs/shopping-list.md              ← hardware options and approximate prices
 docs/device-inventory.md           ← Phase 0 worksheet
 docs/media-server.md               ← Phase 13: optional Jellyfin/Plex/Immich
+docs/coax-moca.md                  ← wired networking over existing coax
 config/packages/family_hub.yaml    ← automations, scripts, helpers (edit IDs)
 config/dashboards/family-hub.yaml  ← kitchen display dashboard (edit IDs)
 kiosk/setup-pi-kiosk.sh            ← Raspberry Pi kiosk setup (Option B)

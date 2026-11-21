@@ -45,6 +45,17 @@ See [`media-server.md`](media-server.md) for which option fits.
 | Second N100/N150 mini PC + 4–8 TB USB drive | $250–350 | Keeps the media server physically separate from Home Assistant. |
 | Plex Pass (only if you choose Plex) | ~$7/mo or lifetime | Needed for hardware transcoding; Jellyfin is free. |
 
+## 6. Optional: wired network over coax
+
+See [`coax-moca.md`](coax-moca.md) to check your coax first.
+
+| Item | ~Price | Notes |
+|---|---|---|
+| MoCA 2.5 adapter (goCoax MA2500D, ScreenBeam ECB6250, etc.) | $60–90 each | One at the router + one per wired room. Skip the router one if your gateway has MoCA built in. |
+| MoCA PoE (point-of-entry) filter | $5–10 | Install on the main splitter's input. Required with cable service. |
+| 5–1675 MHz splitters, 75 Ω terminator caps | $5–15 each | Only if your existing splitters are older/lower rated. |
+| HDHomeRun network TV tuner (if you have an antenna) | $100–200 | Free live TV + DVR in Jellyfin/Plex. |
+
 ## Typical builds
 
 - **Budget (~$300):** HA Green + Android tablet + Voice PE + HA Cloud.
