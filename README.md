@@ -87,6 +87,10 @@ display without changing anything else.
 Work through the phases in order. Each phase is usable on its own, so you can
 leave the Echo Show running in parallel until the end.
 
+> **Only have the Raspberry Pi so far?** Start now: run Home Assistant on the
+> Pi temporarily, do most of the phases, then move everything to the server
+> with one backup file. See [`docs/start-with-pi.md`](docs/start-with-pi.md).
+
 ### Phase 0 — Inventory what the Echo Show does today (1 hour)
 
 1. Open the Alexa app → **Devices**. Write down every bulb, plug, camera and
@@ -448,6 +452,7 @@ docs/device-inventory.md           ← Phase 0 worksheet
 docs/media-server.md               ← Phase 13: optional Jellyfin/Plex/Immich
 docs/coax-moca.md                  ← wired networking over existing coax
 docs/phone-jacks.md                ← wired networking over old phone jacks
+docs/start-with-pi.md              ← start on the Pi now, move to the server later
 config/packages/family_hub.yaml    ← automations, scripts, helpers (edit IDs)
 config/dashboards/family-hub.yaml  ← kitchen display dashboard (edit IDs)
 kiosk/setup-pi-kiosk.sh            ← Raspberry Pi kiosk setup (Option B)
